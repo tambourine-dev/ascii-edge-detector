@@ -1,5 +1,5 @@
 # font defaults
-FONT = "font/IoskeleyMonoTerm-Regular.ttf"
+FONT = 'font/jgs5.ttf'
 FONT_SIZE = 15
 
 # gaussian defaults

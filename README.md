@@ -18,4 +18,4 @@ characters.
 
 The default font is selected from available monospace fonts on your system.
 Use `--font /path/to/font.ttf` to choose a specific font file; the program
-rejects fonts that are not fixed-width.
+rejects fonts that are not fixed-width / mono-spaced.
