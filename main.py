@@ -1,4 +1,5 @@
 import argparse
+import json
 from pathlib import Path
 
 import matplotlib as mpl
@@ -15,33 +16,54 @@ from skimage.io import imread
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 import math
 
-
-METHOD_ALIASES = {
-    "threshold": "threshold",
-    "0": "threshold",
-    "canny": "canny",
-    "1": "canny",
-}
-
-KERNEL_ALIASES = {
-    "elementary": "elementary",  
-    "0": "elementary",
-    "prewitt": "prewitt",        
-    "1": "prewitt",
-    "scharr": "scharr",          
-    "2": "scharr",
-    "sobel": "sobel",            
-    "3": "sobel",
-}
-
-
-def resolve_alias(value: str, aliases: dict[str, str]) -> str:
+def parse_kernel_matrix(value: str) -> np.ndarray:
     try:
-        return aliases[value.lower()]
-    except KeyError:
+        matrix = json.loads(value)
+    except json.JSONDecodeError as exc:
         raise argparse.ArgumentTypeError(
-            f"invalid choice: '{value}'"
+            f"kernel must be a JSON matrix: {exc.msg}"
         ) from None
+
+    if not isinstance(matrix, list) or not matrix or any(
+        not isinstance(row, list) or not row for row in matrix
+    ):
+        raise argparse.ArgumentTypeError(
+            "kernel must be a non-empty, rectangular 2D JSON matrix"
+        )
+
+    row_length = len(matrix[0])
+    if any(len(row) != row_length for row in matrix):
+        raise argparse.ArgumentTypeError(
+            "kernel rows must all have the same number of values"
+        )
+    for row in matrix:
+        for value in row:
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise argparse.ArgumentTypeError(
+                    "kernel values must be finite numbers"
+                )
+            try:
+                finite = math.isfinite(value)
+            except OverflowError:
+                finite = False
+            if not finite:
+                raise argparse.ArgumentTypeError(
+                    "kernel values must be finite numbers"
+                )
+
+    return np.asarray(matrix, dtype=float)
+
+def parse_charset(value: str) -> str:
+    charset = defaults.CHARSETS.get(value.lower(), value)
+    if not charset:
+        raise argparse.ArgumentTypeError(
+            "charset must contain at least one character"
+        )
+    if len(set(charset)) != len(charset):
+        raise argparse.ArgumentTypeError(
+            "charset must not contain duplicate characters"
+        )
+    return charset
 
 def parser_setup() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -66,7 +88,7 @@ def parser_setup() -> argparse.ArgumentParser:
     parser.add_argument(
         "-m",
         "--method",
-        type=lambda value: resolve_alias(value, METHOD_ALIASES),
+        type=str,
         choices=("threshold", "canny"),
         default="canny",
         help="edge detection method",
@@ -74,11 +96,23 @@ def parser_setup() -> argparse.ArgumentParser:
     parser.add_argument(
         "-k",
         "--kernel",
-        type=lambda value: resolve_alias(value, KERNEL_ALIASES),
-        choices=("elementary", "prewitt", "scharr", "sobel"),
+        type=str,
+        choices=("elementary", "prewitt", "scharr", "sobel", "custom"),
         default="elementary",
-        help="derivative kernel",
-    ) # TODO: add support for user kernels later.
+        help="derivative kernel preset, or 'custom' to provide your own pair",
+    )
+    parser.add_argument(
+        "--kernel-x",
+        type=parse_kernel_matrix,
+        metavar="JSON_MATRIX",
+        help="custom horizontal derivative kernel (JSON, used with --kernel custom)",
+    )
+    parser.add_argument(
+        "--kernel-y",
+        type=parse_kernel_matrix,
+        metavar="JSON_MATRIX",
+        help="custom vertical derivative kernel (JSON, used with --kernel custom)",
+    )
     parser.add_argument(
         "-t1",
         "--primary_threshold",
@@ -119,9 +153,9 @@ def parser_setup() -> argparse.ArgumentParser:
     parser.add_argument(
         "-c",
         "--chars",
-        type=str,
+        type=parse_charset,
         default=defaults.CHARSET_BASIC,
-        help="set of chars to be used for image"
+        help="charset preset (minimal, basic, extended, borderbox) or custom characters"
     )
     parser.add_argument(
         "-ct",
@@ -178,7 +212,18 @@ def main() -> None:
     if image is None:
         parser.error(f"could not read image: '{args.source}'")
 
-    operator = kernels.str_to_op(args.kernel)
+    if args.kernel == "custom":
+        if args.kernel_x is None or args.kernel_y is None:
+            parser.error(
+                "--kernel custom requires both --kernel-x and --kernel-y"
+            )
+        operator = kernels.Derivative_Kernels(args.kernel_x, args.kernel_y)
+    else:
+        if args.kernel_x is not None or args.kernel_y is not None:
+            parser.error(
+                "--kernel-x and --kernel-y can only be used with --kernel custom"
+            )
+        operator = kernels.str_to_op(args.kernel)
 
     print("computing derivatives…")
 
