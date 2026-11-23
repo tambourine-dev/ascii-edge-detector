@@ -1,9 +1,12 @@
 import argparse
 import json
+import math
+import string
 from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib import font_manager
 
 import edge_detection
 from helpers import edge_to_ascii
@@ -14,7 +17,6 @@ import numpy as np
 from skimage.io import imread
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
-import math
 
 def parse_kernel_matrix(value: str) -> np.ndarray:
     try:
@@ -64,6 +66,34 @@ def parse_charset(value: str) -> str:
             "charset must not contain duplicate characters"
         )
     return charset
+
+def load_monospace_font(
+    font_path: Path | None,
+    font_size: int,
+    parser: argparse.ArgumentParser,
+) -> tuple[Path, ImageFont.FreeTypeFont]:
+    if font_path is None:
+        try:
+            font_path = Path(
+                font_manager.findfont(
+                    font_manager.FontProperties(family="monospace"),
+                    fallback_to_default=False,
+                )
+            )
+        except ValueError as exc:
+            parser.error(f"could not find an installed monospace font: {exc}")
+
+    try:
+        font = ImageFont.truetype(str(font_path), font_size)
+    except OSError as exc:
+        parser.error(f"could not load font '{font_path}': {exc}")
+
+    printable_ascii = string.ascii_letters + string.digits + string.punctuation + " "
+    advances = {font.getlength(character) for character in printable_ascii}
+    if len(advances) != 1:
+        parser.error(f"font '{font_path}' is not monospace")
+
+    return font_path, font
 
 def parser_setup() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -147,8 +177,8 @@ def parser_setup() -> argparse.ArgumentParser:
         "-f",
         "--font",
         type=Path,
-        default=defaults.FONT,
-        help="font to be used"
+        default=None,
+        help="font file to use (defaults to an installed monospace font)"
     )
     parser.add_argument(
         "-c",
@@ -207,6 +237,7 @@ def escape_rtf(text: str) -> str:
 def main() -> None:
     parser = parser_setup()
     args = parser.parse_args()
+    font_path, font = load_monospace_font(args.font, args.font_size, parser)
 
     image = np.array(imread(args.source, as_gray=True), dtype=float)
     if image is None:
@@ -254,7 +285,7 @@ def main() -> None:
     result = edge_to_ascii(
         edge_image,
         charset=args.chars,
-        font=args.font,
+        font=str(font_path),
         font_size=args.font_size
     )
 
@@ -266,10 +297,9 @@ def main() -> None:
             file.write(result)
             file.close()
     elif Path(args.destination).suffix.lower() == ".rtf":
-        font = ImageFont.truetype(str(args.font), args.font_size)
         font_family, _ = font.getname()
         if font_family is None:
-            parser.error(f"Could not determine font family from '{args.font}'")
+            parser.error(f"Could not determine font family from '{font_path}'")
 
         font_name = escape_rtf(font_family)
         size_half_points = round(args.font_size * 1.5)  # pixels to RTF half-points
@@ -293,7 +323,6 @@ def main() -> None:
         except ValueError as exc:
             parser.error(f"invalid image color: {exc}")
 
-        font = ImageFont.truetype(str(args.font), args.font_size)
         rows = result.splitlines()
         ascent, descent = font.getmetrics()
         line_height = ascent + descent

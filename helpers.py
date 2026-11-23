@@ -61,8 +61,10 @@ def edge_to_ascii(edge_image: np.ndarray, charset:str = defaults.CHARSET_BASIC, 
     correlation_kernels = [helpers.text_to_array(char, font, font_size) for char in charset]
     gaussian_filter = helpers.shaped_gaussian_filter(correlation_kernels[0].shape)
     correlation_results = [ match_template(edge_image, pattern) for pattern in correlation_kernels ]
-    correlation_results_stacked = np.stack([char_likelihoods(result, gaussian_filter) for result in correlation_results], axis=2)
-
+    try:
+        correlation_results_stacked = np.stack([char_likelihoods(result, gaussian_filter) for result in correlation_results], axis=2)
+    except ValueError:
+        raise ValueError("Your font does not have the same size for all characters of the character in the set. Try different characters or different monospaced font.")
     result_string = ""
 
     for i in range(correlation_results_stacked.shape[0]):

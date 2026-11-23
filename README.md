@@ -15,3 +15,7 @@ Choose a built-in character set with `--chars minimal`, `basic` (the default),
 `extended`, or `borderbox`. To provide your own, pass the characters directly,
 for example `--chars '@#.'`. Character sets must be non-empty and cannot repeat
 characters.
+
+The default font is selected from available monospace fonts on your system.
+Use `--font /path/to/font.ttf` to choose a specific font file; the program
+rejects fonts that are not fixed-width.
