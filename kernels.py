@@ -13,7 +13,7 @@ elementary = Derivative_Kernels(
 
 # sobell derivative kernels
 
-sobell = Derivative_Kernels(
+sobel = Derivative_Kernels(
     np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]),
     np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
 )
@@ -36,8 +36,8 @@ def str_to_op(str:str) -> Derivative_Kernels:
     match str.lower():
          case 'elementary':
            return elementary
-         case 'sobell':
-           return sobell
+         case 'sobel':
+           return sobel
          case 'prewitt':
            return prewitt
          case 'scharr':
