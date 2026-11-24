@@ -97,7 +97,7 @@ def load_monospace_font(
 
 def parser_setup() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-            prog="ascii-edge-detector",
+            prog="askid",
             description="Turn an image into ASCII or Unicode illustrations.",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )

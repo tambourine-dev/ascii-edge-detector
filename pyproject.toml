@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ascii-edge-detector = "main:main"
+askid = "main:main"
 
 [tool.setuptools]
 py-modules = ["defaults", "edge_detection", "helpers", "kernels", "main"]

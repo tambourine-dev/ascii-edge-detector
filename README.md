@@ -6,7 +6,7 @@ Convert an image into an ASCII or Unicode illustration of its edges. Results can
 
 Python 3.10 or later is required. Install the project in an isolated environment;
 the project configuration installs all required Python dependencies and creates
-the `ascii-edge-detector` command.
+the `askid` command.
 
 ### macOS and Linux
 
@@ -26,16 +26,16 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
-Run `ascii-edge-detector --help` to see all options. You can also run the script
+Run `askid --help` to see all options. You can also run the script
 directly with `python main.py`.
 
 ## Basic usage
 
 ```sh
-ascii-edge-detector examples/images/girl_with_a_pearl_earring.jpg
-ascii-edge-detector image.jpg --destination output.txt
-ascii-edge-detector image.jpg --destination output.rtf
-ascii-edge-detector image.jpg --destination output.png
+askid examples/images/girl_with_a_pearl_earring.jpg
+askid image.jpg --destination output.txt
+askid image.jpg --destination output.rtf
+askid image.jpg --destination output.png
 ```
 
 The default destination is `console`. Supported output extensions are `.txt`,
@@ -62,8 +62,8 @@ Built-in charsets are `minimal`, `basic` (the default), `extended`, and
 `borderbox`. For example:
 
 ```sh
-ascii-edge-detector image.jpg --chars borderbox
-ascii-edge-detector image.jpg --chars '@#.'
+askid image.jpg --chars borderbox
+askid image.jpg --chars '@#.'
 ```
 
 Custom charsets must contain at least one character and cannot repeat
@@ -79,7 +79,7 @@ Select `--kernel custom` and provide both derivative matrices as JSON. Each
 matrix must be a non-empty rectangular array of finite numbers.
 
 ```sh
-ascii-edge-detector image.jpg --kernel custom \
+askid image.jpg --kernel custom \
   --kernel-x '[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]' \
   --kernel-y '[[-1, -2, -1], [0, 0, 0], [1, 2, 1]]'
 ```
