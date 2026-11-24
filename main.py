@@ -305,6 +305,7 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     print("edge detection done.")
     if not args.no_preview:
         print("preview edge image:")
+        plt.figure("Preview")
         plt.imshow(edge_image)
         plt.show()
 

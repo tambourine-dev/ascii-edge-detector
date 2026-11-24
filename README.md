@@ -1,6 +1,10 @@
 # ASCII Edge Detector
 
-Convert an image into an ASCII or Unicode illustration of its edges. Results can be printed to the terminal or saved as text, RTF, or a raster image.
+This command line application turns your images into beautiful ascii or unicode illustrations.
+
+<img src="examples/images/van_goghs_room.jpg" alt="The Bedroom – Van Gogh" width=32%>
+<img src="examples/previews/van-gogh.png" alt="Canny Edge Detection" width=32%>
+<img src="examples/results/van-gogh.jpg" alt="Ascii result" width=32%>
 
 ## Requirements and installation
 
