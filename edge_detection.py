@@ -10,7 +10,7 @@ import kernels
 import matplotlib.pyplot as plt
 
 def gradient_magnitude(img:np.ndarray, operator:kernels.Derivative_Kernels) -> np.ndarray:
-  print("derivin…")
+  print("deriving…")
   dx2 =scipy.ndimage.convolve(img,operator.kx) ** 2
   dy2 =scipy.ndimage.convolve(img, operator.ky) ** 2
   return np.sqrt(dx2 + dy2)
