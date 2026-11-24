@@ -207,6 +207,11 @@ def parser_setup() -> argparse.ArgumentParser:
         help="do not show preview of image before generating ascii illustration"
     )
     parser.add_argument(
+        "--no-open",
+        action="store_true",
+        help="save output files without opening them in the default application"
+    )
+    parser.add_argument(
         "-fc", "--font-color", "--font_color",
         type=str,
         default="#000000FF",
@@ -319,7 +324,8 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     elif suffix == ".txt":
         with destination.open("w", encoding="utf-8") as file:
             file.write(result)
-        open_with_default_app(destination)
+        if not args.no_open:
+            open_with_default_app(destination)
     elif suffix == ".rtf":
         font_family, _ = font.getname()
         if font_family is None:
@@ -338,7 +344,8 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
 
         with destination.open("w", encoding="ascii", newline="") as file:
             file.write(rtf)
-        open_with_default_app(destination)
+        if not args.no_open:
+            open_with_default_app(destination)
     elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
         try:
             foreground = ImageColor.getcolor(args.font_color, "RGBA")
@@ -381,7 +388,8 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
             output = Image.alpha_composite(matte, output).convert("RGB")
 
         output.save(destination)
-        open_with_default_app(destination)
+        if not args.no_open:
+            open_with_default_app(destination)
     else:
         parser.error(
             "unsupported destination format; use console, .txt, .rtf, "

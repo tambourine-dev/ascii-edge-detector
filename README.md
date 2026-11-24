@@ -59,6 +59,7 @@ application.
 | `-fc`, `--font-color` | Text color for image output, as a Pillow-compatible color (default `#000000FF`). |
 | `-bc`, `--background-color` | Background color for image output (default `#FFFFFFFF`). |
 | `-np`, `--no-preview` | Skip the edge-image preview window. |
+| `--no-open` | Save output files without opening them in the default application. |
 
 Built-in charsets are `minimal`, `basic` (the default), `extended`, and
 `borderbox`. For example:
