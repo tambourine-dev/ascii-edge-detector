@@ -1,11 +1,11 @@
 # ASCII Edge Detector
 
 This command line application turns your images into beautiful ascii or unicode illustrations.
-
+<div>
 <img src="examples/images/van_goghs_room.jpg" alt="The Bedroom – Van Gogh" width=32%>
 <img src="examples/previews/van-gogh.png" alt="Canny Edge Detection" width=32%>
 <img src="examples/results/van-gogh.jpg" alt="Ascii result" width=32%>
-
+</div>
 ## Requirements and installation
 
 Python 3.10 or later is required. Install the project in an isolated environment;
