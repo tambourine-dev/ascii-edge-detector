@@ -5,13 +5,19 @@ from skimage.feature import match_template
 import defaults
 import helpers
 
-def shaped_gaussian_filter(shape:tuple[int, int]=(15, 15), sigma:float=2) -> np.ndarray:
+import matplotlib.pyplot as plt
+
+def shaped_gaussian_filter(shape:tuple[int, int]=(15, 15)) -> np.ndarray:
     height, width = shape
     m = max(width, height)
+    sigma = min(width, height) // 4
     g = gaussian_filter(m, sigma)
     d_width = m - width
     d_height = m - height
-    return g[(d_height // 2):(height + (d_height // 2)), (d_width // 2):(width + (d_width // 2))]
+    res = g[(d_height // 2):(height + (d_height // 2)), (d_width // 2):(width + (d_width // 2))]
+    plt.imshow(res)
+    plt.show()
+    return res
 
 def gaussian_filter(size:int=15, sigma:float=3):
     x, y = np.mgrid[-size//2 + 1:size//2 + 1, -size//2 + 1:size//2 + 1]
@@ -58,6 +64,7 @@ def char_likelihoods(img: np.ndarray, filter: np.ndarray) -> np.ndarray:
 
 
 def edge_to_ascii(edge_image: np.ndarray, charset:str = defaults.CHARSET_BASIC, selection_threshold:float=defaults.SELECTION_THRESHOLD, font:str=defaults.FONT, font_size:int=defaults.FONT_SIZE) -> str:
+    print("correlating characters…")
     correlation_kernels = [helpers.text_to_array(char, font, font_size) for char in charset]
     gaussian_filter = helpers.shaped_gaussian_filter(correlation_kernels[0].shape)
     correlation_results = [ match_template(edge_image, pattern) for pattern in correlation_kernels ]
@@ -67,6 +74,7 @@ def edge_to_ascii(edge_image: np.ndarray, charset:str = defaults.CHARSET_BASIC, 
         raise ValueError("Your font does not have the same size for all characters of the character in the set. Try different characters or different monospaced font.")
     result_string = ""
 
+    print("chosing best-match characters…")
     for i in range(correlation_results_stacked.shape[0]):
         for j in range(correlation_results_stacked.shape[1]):
             k = np.argmax(correlation_results_stacked[i, j, :])

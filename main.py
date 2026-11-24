@@ -145,6 +145,7 @@ def parser_setup() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-t1",
+        "--primary-threshold",
         "--primary_threshold",
         type=float,
         default=defaults.THRESHOLD_PRIMARY,
@@ -152,6 +153,7 @@ def parser_setup() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-t2",
+        "--secondary-threshold",
         "--secondary_threshold",
         type=float,
         default=defaults.THRESHOLD_SECONDARY,
@@ -168,6 +170,7 @@ def parser_setup() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-fs",
+        "--font-size",
         "--font_size",
         type=int,
         default=defaults.FONT_SIZE,
@@ -189,24 +192,25 @@ def parser_setup() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "-ct",
+        "--char-threshold",
         "--char_threshold",
         type=int,
         default=defaults.SELECTION_THRESHOLD,
         help="correlation threshold to cosider a given ascii"
     )
     parser.add_argument(
-        "-np", "--no_preview",
+        "-np", "--no-preview", "--no_preview",
         action="store_true",
         help="do not show preview of image before generating ascii illustration"
     )
     parser.add_argument(
-        "-fc", "--font_color",
+        "-fc", "--font-color", "--font_color",
         type=str,
         default="#000000FF",
         help="RGBA font color in hex. (ignored unless output format is image)"
     )
     parser.add_argument(
-        "-bc", "--background_color",
+        "-bc", "--background-color", "--background_color",
         type=str,
         default="#FFFFFFFF",
         help="RGBA background color in hex. (ignored unless output format is image.)"
@@ -234,9 +238,7 @@ def escape_rtf(text: str) -> str:
                 parts.append(rf"\u{unit if unit < 0x8000 else unit - 0x10000}?")
     return "".join(parts)
 
-def main() -> None:
-    parser = parser_setup()
-    args = parser.parse_args()
+def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     font_path, font = load_monospace_font(args.font, args.font_size, parser)
 
     image = np.array(imread(args.source, as_gray=True), dtype=float)
@@ -289,14 +291,15 @@ def main() -> None:
         font_size=args.font_size
     )
 
-    print(args.destination)
+    destination = Path(args.destination)
+    suffix = destination.suffix.lower()
+    print(f"saving to {args.destination}")
     if args.destination == "console":
         print(result)
-    elif args.destination.endswith('.txt'):
-        with open(args.destination, 'w') as file:
+    elif suffix == ".txt":
+        with destination.open("w", encoding="utf-8") as file:
             file.write(result)
-            file.close()
-    elif Path(args.destination).suffix.lower() == ".rtf":
+    elif suffix == ".rtf":
         font_family, _ = font.getname()
         if font_family is None:
             parser.error(f"Could not determine font family from '{font_path}'")
@@ -312,11 +315,9 @@ def main() -> None:
             "}"
         )
 
-        with open(args.destination, "w", encoding="ascii", newline="") as file:
+        with destination.open("w", encoding="ascii", newline="") as file:
             file.write(rtf)
-    elif Path(args.destination).suffix.lower() in {
-    ".png", ".jpg", ".jpeg", ".tif", ".tiff"
-}:
+    elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
         try:
             foreground = ImageColor.getcolor(args.font_color, "RGBA")
             background = ImageColor.getcolor(args.background_color, "RGBA")
@@ -346,7 +347,7 @@ def main() -> None:
             text_layer,
         )
 
-        if Path(args.destination).suffix.lower() in {".jpg", ".jpeg"}:
+        if suffix in {".jpg", ".jpeg"}:
             if isinstance(background, int):
                 parser.error("Expected an RGBA tuple for background color")
 
@@ -357,7 +358,21 @@ def main() -> None:
             )
             output = Image.alpha_composite(matte, output).convert("RGB")
 
-        output.save(args.destination)
+        output.save(destination)
+    else:
+        parser.error(
+            "unsupported destination format; use console, .txt, .rtf, "
+            ".png, .jpg, .jpeg, .tif, or .tiff"
+        )
+
+
+def main() -> None:
+    parser = parser_setup()
+    args = parser.parse_args()
+    try:
+        run(args, parser)
+    except (OSError, ValueError, RuntimeError) as exc:
+        parser.error(f"could not process image: {exc}")
 
 if __name__ == "__main__":
     mpl.rc("image", cmap="gray")
