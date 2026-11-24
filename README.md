@@ -6,7 +6,7 @@ Convert an image into an ASCII or Unicode illustration of its edges. Results can
 
 Python 3.10 or later is required. Install the project in an isolated environment;
 the project configuration installs all required Python dependencies and creates
-the `askid` command.
+the `askit` command.
 
 ### macOS and Linux
 
@@ -26,22 +26,22 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
-Run `askid --help` to see all options. You can also run the script
+Run `askit --help` to see all options. You can also run the script
 directly with `python main.py`.
 
 ## Basic usage
 
 ```sh
-askid examples/images/girl_with_a_pearl_earring.jpg
-askid image.jpg --destination output.txt
-askid image.jpg --destination output.rtf
-askid image.jpg --destination output.png
+askit examples/images/girl_with_a_pearl_earring.jpg
+askit image.jpg --destination output.txt
+askit image.jpg --destination output.rtf
+askit image.jpg --destination output.png
 ```
 
 The default destination is `console`. Supported output extensions are `.txt`,
 `.rtf`, `.png`, `.jpg`, `.jpeg`, `.tif`, and `.tiff`. The output format is
 selected from the destination extension.
-After saving to a file, `askid` opens it with the operating system's default
+After saving to a file, `askit` opens it with the operating system's default
 application.
 
 ## Options
@@ -65,8 +65,8 @@ Built-in charsets are `minimal`, `basic` (the default), `extended`, and
 `borderbox`. For example:
 
 ```sh
-askid image.jpg --chars borderbox
-askid image.jpg --chars '@#.'
+askit image.jpg --chars borderbox
+askit image.jpg --chars '@#.'
 ```
 
 Custom charsets must contain at least one character and cannot repeat
@@ -82,7 +82,7 @@ Select `--kernel custom` and provide both derivative matrices as JSON. Each
 matrix must be a non-empty rectangular array of finite numbers.
 
 ```sh
-askid image.jpg --kernel custom \
+askit image.jpg --kernel custom \
   --kernel-x '[[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]' \
   --kernel-y '[[-1, -2, -1], [0, 0, 0], [1, 2, 1]]'
 ```

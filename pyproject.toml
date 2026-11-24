@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.scripts]
-askid = "main:main"
+askit = "main:main"
 
 [tool.setuptools]
 py-modules = ["defaults", "edge_detection", "helpers", "kernels", "main"]
