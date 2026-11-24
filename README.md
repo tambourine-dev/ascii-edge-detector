@@ -93,3 +93,4 @@ Command-line usage problems and expected image, font, and output errors are
 reported as concise command-line messages. Check that the input image exists,
 that a specified font path is readable and monospace, and that the destination
 extension is supported.
+The tool struggles to handle images with larger resolution and therefore may take longer than expected. Try to use larger font sizes and stronger gaussian filters in that case or use a lower resolution image.
