@@ -41,6 +41,8 @@ askid image.jpg --destination output.png
 The default destination is `console`. Supported output extensions are `.txt`,
 `.rtf`, `.png`, `.jpg`, `.jpeg`, `.tif`, and `.tiff`. The output format is
 selected from the destination extension.
+After saving to a file, `askid` opens it with the operating system's default
+application.
 
 ## Options
 

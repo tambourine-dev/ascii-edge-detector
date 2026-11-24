@@ -1,7 +1,10 @@
 import argparse
 import json
 import math
+import os
 import string
+import subprocess
+import sys
 from pathlib import Path
 
 import matplotlib as mpl
@@ -238,6 +241,23 @@ def escape_rtf(text: str) -> str:
                 parts.append(rf"\u{unit if unit < 0x8000 else unit - 0x10000}?")
     return "".join(parts)
 
+def open_with_default_app(path: Path) -> None:
+    resolved_path = str(path.resolve())
+
+    if sys.platform == "win32":
+        startfile = getattr(os, "startfile", None)
+        if not callable(startfile):
+            raise RuntimeError("opening files with the default application is unavailable")
+        startfile(resolved_path)
+    elif sys.platform == "darwin":
+        subprocess.run(["open", resolved_path], check=True)
+    elif sys.platform.startswith("linux"):
+        subprocess.run(["xdg-open", resolved_path], check=True)
+    else:
+        raise RuntimeError(
+            f"opening files with the default application is unsupported on {sys.platform}"
+        )
+
 def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     font_path, font = load_monospace_font(args.font, args.font_size, parser)
 
@@ -299,6 +319,7 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
     elif suffix == ".txt":
         with destination.open("w", encoding="utf-8") as file:
             file.write(result)
+        open_with_default_app(destination)
     elif suffix == ".rtf":
         font_family, _ = font.getname()
         if font_family is None:
@@ -317,6 +338,7 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
 
         with destination.open("w", encoding="ascii", newline="") as file:
             file.write(rtf)
+        open_with_default_app(destination)
     elif suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff"}:
         try:
             foreground = ImageColor.getcolor(args.font_color, "RGBA")
@@ -359,6 +381,7 @@ def run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
             output = Image.alpha_composite(matte, output).convert("RGB")
 
         output.save(destination)
+        open_with_default_app(destination)
     else:
         parser.error(
             "unsupported destination format; use console, .txt, .rtf, "
@@ -371,7 +394,7 @@ def main() -> None:
     args = parser.parse_args()
     try:
         run(args, parser)
-    except (OSError, ValueError, RuntimeError) as exc:
+    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc:
         parser.error(f"could not process image: {exc}")
 
 if __name__ == "__main__":

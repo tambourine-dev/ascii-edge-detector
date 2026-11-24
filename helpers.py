@@ -5,8 +5,6 @@ from skimage.feature import match_template
 import defaults
 import helpers
 
-import matplotlib.pyplot as plt
-
 def shaped_gaussian_filter(shape:tuple[int, int]=(15, 15)) -> np.ndarray:
     height, width = shape
     m = max(width, height)
@@ -15,8 +13,6 @@ def shaped_gaussian_filter(shape:tuple[int, int]=(15, 15)) -> np.ndarray:
     d_width = m - width
     d_height = m - height
     res = g[(d_height // 2):(height + (d_height // 2)), (d_width // 2):(width + (d_width // 2))]
-    plt.imshow(res)
-    plt.show()
     return res
 
 def gaussian_filter(size:int=15, sigma:float=3):
